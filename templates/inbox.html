@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inbox</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Navbar container -->
+    <div id="header"></div>
+    <script>
+      fetch("header.html")
+        .then((res) => res.text())
+        .then((html) => {
+          document.getElementById("header").innerHTML = html;
+        });
+    </script>
+
+    <!-- Main content -->
+    <div class="container mt-5 pt-5">
+      <h3 class="mb-3">Your Inbox</h3>
+      <p id="lastLoginTime" class="text-muted mb-4"></p>
+
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>From</th>
+            <th>Subject</th>
+            <th>Message</th>
+            <th>Received At</th>
+          </tr>
+        </thead>
+        <tbody id="inboxList">
+          <tr>
+            <td colspan="4" class="text-center">Loading...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- JS: Fetch inbox + last login -->
+    <script>
+      // Show last login time from cookie
+      const cookie = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("last_login="));
+      if (cookie) {
+        const lastLogin = decodeURIComponent(cookie.split("=")[1]);
+        document.getElementById("lastLoginTime").innerText =
+          "You last logged in on: " + lastLogin;
+      }
+
+      // Load inbox messages
+      function loadInbox() {
+        fetch("../api/inbox.php")
+          .then((res) => res.text()) // for debugging: use text instead of json()
+          .then((text) => {
+            console.log("📦 Inbox response:", text);
+            const data = JSON.parse(text);
+
+            const inboxList = document.getElementById("inboxList");
+            inboxList.innerHTML = "";
+
+            if (data.length === 0 || data.error) {
+              inboxList.innerHTML = `<tr><td colspan="4" class="text-center">${
+                data.error || "No emails found."
+              }</td></tr>`;
+              return;
+            }
+
+            data.forEach((email) => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+              <td>${email.sender}</td>
+              <td>${email.subject}</td>
+              <td>${email.body}</td>
+              <td>${email.timestamp}</td>
+            `;
+              inboxList.appendChild(row);
+            });
+          })
+          .catch((err) => {
+            console.error("❌ Fetch error:", err);
+            document.getElementById(
+              "inboxList"
+            ).innerHTML = `<tr><td colspan="4" class="text-danger text-center">Error loading inbox.</td></tr>`;
+          });
+      }
+
+      // Load inbox immediately
+      loadInbox();
+
+      // Poll every 60 seconds
+      setInterval(loadInbox, 60000);
+    </script>
+  </body>
+</html>

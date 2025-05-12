@@ -1,0 +1,28 @@
+# Ignore node modules
+node_modules/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore log files and temporary files
+*.log
+*.tmp
+
+# Ignore PHP sessions
+sessions/
+
+# Ignore backup or swap files
+*.bak
+*.swp
+*.swo
+
+# Ignore compiled files
+*.class
+*.o
+*.pyc
+*.exe
+
+# Ignore IDE/editor folders
+.vscode/
+.idea/

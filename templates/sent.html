@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sent Emails</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container mt-5">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Sent Emails</h3>
+        <div>
+          <a href="inbox.html" class="btn btn-secondary me-2">Inbox</a>
+          <a href="compose.html" class="btn btn-primary">Compose</a>
+        </div>
+      </div>
+
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>To</th>
+            <th>Subject</th>
+            <th>Message</th>
+            <th>Sent At</th>
+          </tr>
+        </thead>
+        <tbody id="sentList">
+          <tr>
+            <td colspan="4" class="text-center">Loading...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+      function loadSent() {
+        fetch("../api/sent.php")
+          .then((res) => res.json())
+          .then((data) => {
+            const sentList = document.getElementById("sentList");
+            sentList.innerHTML = "";
+
+            if (data.length === 0 || data.error) {
+              sentList.innerHTML = `<tr><td colspan="4" class="text-center">${
+                data.error || "No sent emails yet."
+              }</td></tr>`;
+              return;
+            }
+
+            data.forEach((email) => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+              <td>${email.recipient}</td>
+              <td>${email.subject}</td>
+              <td>${email.body}</td>
+              <td>${email.timestamp}</td>
+            `;
+              sentList.appendChild(row);
+            });
+          })
+          .catch((err) => {
+            document.getElementById(
+              "sentList"
+            ).innerHTML = `<tr><td colspan="4" class="text-danger text-center">Error loading sent emails.</td></tr>`;
+            console.error(err);
+          });
+      }
+
+      loadSent();
+    </script>
+  </body>
+</html>
